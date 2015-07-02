@@ -81,6 +81,15 @@ public class SearchAndDisplayPanel extends JPanel {
 		add(tabbedPanel);
 	}
 	
+	// Label and text field panel unit
+	class panelUnit extends JPanel {
+		panelUnit(JLabel label, JTextField field) {
+			this.setLayout(new GridLayout(2, 1));
+			this.add(label);
+			this.add(field);
+		}		
+	}
+	
 	// Creates the search panel
 	protected JPanel createSearchPanel() {
 		JPanel searchPanel = new JPanel();
@@ -90,19 +99,20 @@ public class SearchAndDisplayPanel extends JPanel {
 		searchPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 		searchPanel.setLayout(new GridLayout(0, 1));
 		searchPanel.setFont(font);
-		searchPanel.add(symbol);
-		searchPanel.add(symbol_field);
-		searchPanel.add(trade_utc_time);
-		searchPanel.add(trade_utc_time_field);
-		searchPanel.add(trader_Id);
-		searchPanel.add(trader_Id_field);
-		searchPanel.add(trade_qty);
-		searchPanel.add(trade_qty_field);
-		searchPanel.add(trade_price);
-		searchPanel.add(trade_price_field);
+		searchPanel.add(new panelUnit(symbol, symbol_field));
+		searchPanel.add(new panelUnit(trade_utc_time, trade_utc_time_field));
+		searchPanel.add(new panelUnit(trader_Id, trader_Id_field));
+		searchPanel.add(new panelUnit(trade_qty, trade_qty_field));
+		searchPanel.add(new panelUnit(trade_price, trade_price_field));
 		searchPanel.add(new JPanel());
+		JPanel buttonPanel = new JPanel();
+		BorderLayout buttonLayout = new BorderLayout();
+		buttonPanel.setLayout(buttonLayout);
+		buttonPanel.setBorder(BorderFactory.createEmptyBorder(10, 130, 10, 130));
+		searchButton.setPreferredSize(new Dimension(50, 50));
 		searchButton.addActionListener(new searchActionListener());
-		searchPanel.add(searchButton);
+		buttonPanel.add(searchButton, BorderLayout.CENTER);
+		searchPanel.add(buttonPanel);
 		return searchPanel;
 	}
 	
@@ -244,25 +254,25 @@ public class SearchAndDisplayPanel extends JPanel {
     	// Creates table model
         WashTradeTableModel model = (WashTradeTableModel)table.getModel();
         TableColumn column = null;
-        Component comp = null;
+        Component component = null;
         int headerWidth = 0;
         int cellWidth = 0;
         Object[] longValues = model.longValues;
         // Retrieves table handler
         TableCellRenderer headerRenderer = table.getTableHeader().getDefaultRenderer();
         // Configures column properties
-        for (int i = 0; i < 5; i++) {
+        for (int i = 0; i < 6; i++) {
             column = table.getColumnModel().getColumn(i);
-            comp = headerRenderer.getTableCellRendererComponent(
+            component = headerRenderer.getTableCellRendererComponent(
                                  null, column.getHeaderValue(),
                                  false, false, 0, 0);
-            headerWidth = comp.getPreferredSize().width;
-            comp = table.getDefaultRenderer(model.getColumnClass(i)).
+            headerWidth = component.getPreferredSize().width;
+            component = table.getDefaultRenderer(model.getColumnClass(i)).
                              getTableCellRendererComponent(
                                  table, longValues[i],
                                  false, false, 0, i);
-            cellWidth = comp.getPreferredSize().width;
-            column.setPreferredWidth(Math.max(headerWidth, cellWidth));
+            cellWidth = component.getPreferredSize().width;
+            column.setPreferredWidth(Math.max(150, cellWidth));
         }
     }
 	
@@ -270,15 +280,16 @@ public class SearchAndDisplayPanel extends JPanel {
 	protected JPanel createDisplayPanel(String symbol, String time, String Id, int qty, double price) {
 	    JPanel displayPanel = new JPanel();
 	    displayPanel.setLayout(new GridLayout(0, 1));
-	    int displayPanelWidth = 500;
+	    int displayPanelWidth = 600;
 		int displayPanelHeight = 600;
 		displayPanel.setPreferredSize(new Dimension(displayPanelWidth, displayPanelHeight));
         // Creates the security records table
 	    JTable table = new JTable(new WashTradeTableModel(symbol, time, Id, qty, price));
         table.setAutoCreateRowSorter(true);
+        table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
         //table.setPreferredScrollableViewportSize(new Dimension(500, 70));
         // Creates the scroll pane
-        JScrollPane scrollPane = new JScrollPane(table);
+        JScrollPane scrollPane = new JScrollPane(table, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
         // Sets up column sizes
         initColumnSizes(table);
         Font font = new Font("Tahoma", Font.PLAIN, 16);
