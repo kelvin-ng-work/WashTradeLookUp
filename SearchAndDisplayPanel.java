@@ -28,11 +28,13 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Calendar;
 
-public class SearchAndDisplayPanel extends JPanel {
 
+public class SearchAndDisplayPanel extends JPanel {
 	private Font font = new Font("Tahoma", Font.PLAIN, 16);
 	private JTabbedPane tabbedPanel = new JTabbedPane();
 	private JPanel firstTab, secondTab;
+	private JPanel statusPanel = new JPanel();
+	private JLabel statusLabel = new JLabel("", JLabel.CENTER);
 	private JLabel symbol = new JLabel("Symbol", JLabel.LEFT);
 	private JLabel trade_utc_time = new JLabel("Trade_UTC_Time", JLabel.LEFT);
 	private JLabel trader_Id = new JLabel("Trader Id", JLabel.LEFT);
@@ -41,13 +43,13 @@ public class SearchAndDisplayPanel extends JPanel {
 	private JTextField symbol_field = new JTextField();
 	private JTextField trade_utc_time_field = new JTextField();
 	private JTextField trader_Id_field = new JTextField();
-	private JTextField trade_qty_field = new JTextField("0");
-	private JTextField trade_price_field = new JTextField("0.0000");
+	private JTextField trade_qty_field = new JTextField();
+	private JTextField trade_price_field = new JTextField();
 	private JButton searchButton = new JButton("Search");
 	private final String JDBC_DRIVER = "com.mysql.jdbc.Driver";  
-	private final String DB_URL = "jdbc:mysql://10.60.67.192:3306/Omega";
-	private final String USER = "omega_user";
-	private final String PASS = "omega_user";
+	private final String DB_URL = "jdbc:mysql://host/database";
+	private final String USER = "user";
+	private final String PASS = "password";
 	private Connection conn = null;
 	private Statement stmt = null;
 	private ResultSet rs;
@@ -60,10 +62,17 @@ public class SearchAndDisplayPanel extends JPanel {
 			String symbol = symbol_field.getText();
 			String time = trade_utc_time_field.getText();
 			String Id = trader_Id_field.getText();
-			int qty = Integer.parseInt(trade_qty_field.getText());
-			double price = Double.parseDouble(trade_price_field.getText());
+			int qty = 0;
+			if(!((trade_qty_field.getText()).length() == 0)) {
+				qty = Integer.parseInt(trade_qty_field.getText());
+			}
+			double price = 0.0000;
+			if(!((trade_price_field.getText()).length() == 0)) {
+				price = Double.parseDouble(trade_price_field.getText());
+			}
 			secondTab = createDisplayPanel(symbol, time, Id, qty, price);
 			tabbedPanel.setComponentAt(1, secondTab);
+			statusLabel.setText(totalWashTrades + " wash trade(s) returned.");
 		}
 	}
 	
@@ -104,7 +113,9 @@ public class SearchAndDisplayPanel extends JPanel {
 		searchPanel.add(new panelUnit(trader_Id, trader_Id_field));
 		searchPanel.add(new panelUnit(trade_qty, trade_qty_field));
 		searchPanel.add(new panelUnit(trade_price, trade_price_field));
-		searchPanel.add(new JPanel());
+		statusPanel.setBorder(BorderFactory.createEmptyBorder(20, 0, 0, 0));
+		statusPanel.add(statusLabel);
+		searchPanel.add(statusPanel);
 		JPanel buttonPanel = new JPanel();
 		BorderLayout buttonLayout = new BorderLayout();
 		buttonPanel.setLayout(buttonLayout);
@@ -148,7 +159,7 @@ public class SearchAndDisplayPanel extends JPanel {
     	 	          stmt = conn.createStatement();
     	 	          // SQL select statement to retrieve target securities
     	 	          String sql = "SELECT * FROM EOD_TRADE_VIEW WHERE SYMBOL='" + symbol + "'";
-    	 	          if(!(time.length() == 0)) {
+    	 	          if(!(trade_utc_time.length() == 0)) {
     	 	        	  double seconds = Double.parseDouble(trade_utc_time.substring(trade_utc_time.length() - 5));
     	 	        	  double prevTimeUnit = seconds - 0.001;
     	 	        	  double nextTimeUnit = seconds + 0.001;
@@ -156,16 +167,16 @@ public class SearchAndDisplayPanel extends JPanel {
     	 	        	  String oneMsGreaterThanTradeTime = trade_utc_time.substring(0, trade_utc_time.length() - 5) + nextTimeUnit;
     	 	        	  sql += " AND (TRADE_UTC_TIME='" + trade_utc_time + "' OR TRADE_UTC_TIME='" + oneMsLessThanTradeTime + "' OR TRADE_UTC_TIME='" + oneMsGreaterThanTradeTime + "')";
     	 	          }
-    	 	          if(!(Id == "")) {
+    	 	          if(!(trader_Id.length() == 0)) {
     	 	        	  sql += " AND TRADER_ID='" + trader_Id + "'";
     	 	          }
-    	 	          if(!(qty == 0)) {
+    	 	          if(!(trade_qty == 0)) {
     	 	        	  sql += " AND TRADE_QTY=" + trade_qty;
     	 	          }
-    	 	          if(!(Double.compare(price, 0.0000) == 0)) {
+    	 	          if(!(Double.compare(trade_price, 0.0000) == 0)) {
     	 	        	  sql += " AND TRADE_PRICE=" + trade_price;
     	 	          }
-    	 	          System.out.println(sql);
+    	 	          //System.out.println(sql);
     	 	          // Executes the database query
     	 			  rs = stmt.executeQuery(sql);
     	 			  // Handles returned query result
