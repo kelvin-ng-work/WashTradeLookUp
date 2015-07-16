@@ -30,7 +30,8 @@ import java.util.Calendar;
 
 
 public class SearchAndDisplayPanel extends JPanel {
-	private Font font = new Font("Tahoma", Font.PLAIN, 16);
+	private Font labelFont = new Font("Tahoma", Font.BOLD, 16);
+	private Font fieldFont = new Font("Tahoma", Font.PLAIN, 16);
 	private JTabbedPane tabbedPanel = new JTabbedPane();
 	private JPanel firstTab, secondTab;
 	private JPanel statusPanel = new JPanel();
@@ -48,10 +49,11 @@ public class SearchAndDisplayPanel extends JPanel {
 	private JTextField trade_qty_field = new JTextField();
 	private JTextField trade_price_field = new JTextField();
 	private JButton searchButton = new JButton("Search");
-	private final String JDBC_DRIVER = "com.mysql.jdbc.Driver";  
-	private final String DB_URL = "jdbc:mysql://10.60.67.192:3306/Omega";
-	private final String USER = "omega_user";
-	private final String PASS = "omega_user";
+	private JButton clearButton = new JButton("Clear Fields");
+    static final String JDBC_DRIVER = "com.mysql.jdbc.Driver";
+    static final String DB_URL = "jdbc:mysql://host:port/database";
+    static final String USER = "user";
+    static final String PASS = "password";
 	private Connection conn = null;
 	private Statement stmt = null;
 	private ResultSet rs;
@@ -101,11 +103,24 @@ public class SearchAndDisplayPanel extends JPanel {
 	   }
 	}
 	
-	// ActionListener registered to the search button to search and display wash trades
+	// ActionListener registered to the Search button to search and display wash trades
 	class searchActionListener implements ActionListener {
 		public void actionPerformed(ActionEvent e) {
+			statusLabel.setText(symbol_field.getText() + " wash trade query issued.");
 			washTradeThread thread = new washTradeThread("Wash Trade Lookup");
 			thread.start();
+		}
+	}
+	
+	// ActionListener registered to the Clear Fields button to clear all fields
+	class clearActionListener implements ActionListener {
+		public void actionPerformed(ActionEvent e) {
+			symbol_field.setText("");
+			trade_utc_time_field.setText("");
+			broker_field.setText("");
+			trader_Id_field.setText("");
+			trade_qty_field.setText("");
+			trade_price_field.setText("");
 		}
 	}
 	
@@ -137,38 +152,52 @@ public class SearchAndDisplayPanel extends JPanel {
 		JPanel searchPanel = new JPanel();
 		searchPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 		searchPanel.setLayout(new GridLayout(0, 3));
-		searchPanel.setFont(font);
 		searchPanel.add(new JPanel());
+		symbol.setFont(labelFont);
+		symbol_field.setFont(fieldFont);
 		searchPanel.add(new panelUnit(symbol, symbol_field));
 		searchPanel.add(new JPanel());
 		searchPanel.add(new JPanel());
+		trade_utc_time.setFont(labelFont);
+		trade_utc_time_field.setFont(fieldFont);
 		searchPanel.add(new panelUnit(trade_utc_time, trade_utc_time_field));
 		searchPanel.add(new JPanel());
 		searchPanel.add(new JPanel());
+		broker.setFont(labelFont);
+		broker_field.setFont(fieldFont);
 		searchPanel.add(new panelUnit(broker, broker_field));
 		searchPanel.add(new JPanel());
 		searchPanel.add(new JPanel());
+		trader_Id.setFont(labelFont);
+		trader_Id_field.setFont(fieldFont);
 		searchPanel.add(new panelUnit(trader_Id, trader_Id_field));
 		searchPanel.add(new JPanel());
 		searchPanel.add(new JPanel());
+		trade_qty.setFont(labelFont);
+		trade_qty_field.setFont(fieldFont);
 		searchPanel.add(new panelUnit(trade_qty, trade_qty_field));
 		searchPanel.add(new JPanel());
 		searchPanel.add(new JPanel());
+		trade_price.setFont(labelFont);
+		trade_price_field.setFont(fieldFont);
 		searchPanel.add(new panelUnit(trade_price, trade_price_field));
 		searchPanel.add(new JPanel());
 		searchPanel.add(new JPanel());
-		statusPanel.setFont(font);
 		statusPanel.setBorder(BorderFactory.createEmptyBorder(20, 0, 0, 0));
+		statusLabel.setFont(labelFont);
 		statusPanel.add(statusLabel);
 		searchPanel.add(statusPanel);
 		searchPanel.add(new JPanel());
 		JPanel buttonPanel = new JPanel();
-		BorderLayout buttonLayout = new BorderLayout();
+		FlowLayout buttonLayout = new FlowLayout();
 		buttonPanel.setLayout(buttonLayout);
-		buttonPanel.setBorder(BorderFactory.createEmptyBorder(10, 130, 10, 130));
-		searchButton.setPreferredSize(new Dimension(50, 50));
+		//buttonPanel.setBorder(BorderFactory.createEmptyBorder(10, 130, 10, 130));
 		searchButton.addActionListener(new searchActionListener());
-		buttonPanel.add(searchButton, BorderLayout.CENTER);
+		clearButton.addActionListener(new clearActionListener());
+		searchButton.setFont(labelFont);
+		clearButton.setFont(labelFont);
+		buttonPanel.add(clearButton);
+		buttonPanel.add(searchButton);
 		searchPanel.add(new JPanel());
 		searchPanel.add(buttonPanel);
 		searchPanel.add(new JPanel());
@@ -347,7 +376,7 @@ public class SearchAndDisplayPanel extends JPanel {
                                  table, longValues[i],
                                  false, false, 0, i);
             cellWidth = component.getPreferredSize().width;
-            column.setPreferredWidth(Math.max(150, cellWidth));
+            column.setPreferredWidth(Math.max(200, cellWidth));
         }
     }
 	
@@ -367,7 +396,8 @@ public class SearchAndDisplayPanel extends JPanel {
         JScrollPane scrollPane = new JScrollPane(table, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
         // Sets up column sizes
         initColumnSizes(table);
-        Font font = new Font("Tahoma", Font.PLAIN, 16);
+        Font font = new Font("Tahoma", Font.PLAIN, 24);
+        table.setRowHeight(30);
         table.setFont(font);
         table.getTableHeader().setFont(font);
         DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
